@@ -78,7 +78,12 @@ class FhirPatientRestController
     public function getOne($fhirId)
     {
         $processingResult = $this->fhirPatientService->getOne($fhirId, true);
-        return RestControllerHelper::handleProcessingResult($processingResult, 200);
+        // error_log($processingResult->getData());
+        $result = RestControllerHelper::handleProcessingResult($processingResult, 200);
+        if(array_key_exists("data",$result)){
+            return $result["data"];
+        }
+        return $result;
     }
 
     /**

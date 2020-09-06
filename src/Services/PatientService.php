@@ -299,6 +299,15 @@ class PatientService extends BaseService
         return $processingResult;
     }
 
+    public function getUUID($pid)
+    {
+        $sql = "SELECT uuid
+                FROM patient_data
+                WHERE pid = ?";
+
+        $sqlResult = sqlQuery($sql, [$pid]);
+        return UuidRegistry::uuidToString($sqlResult['uuid']);
+    }
     /**
      * @return number
      */

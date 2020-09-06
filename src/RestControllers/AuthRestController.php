@@ -68,6 +68,7 @@ class AuthRestController
             }
             $userId = $authAPILogin->getUserId();
             $userGroup = $authAPILogin->getUserGroup();
+
             $patientId = 0;
             if (empty($userId) || empty($userGroup)) {
                 // Something is seriously wrong
@@ -77,7 +78,9 @@ class AuthRestController
             $event = 'api';
             $genericUserId = $userId;
         }
-
+        return $this->generate_session_token($patientId, $userId, $userGroup, $authPayload["username"], $event, $genericUserId, $_SESSION['api']);
+    }
+    public function generate_session_token($patientId, $userId, $userGroup ,$userName, $event, $genericUserId, $tokenType){
         // PASSED
         //
         // Bearer token creation
@@ -128,7 +131,7 @@ class AuthRestController
         $sql .= "     `token` = ?,";
         $sql .= "     `token_auth` = ?,";
         $sql .= "     `expiry` = DATE_ADD(NOW(), INTERVAL 1 HOUR)";
-        sqlStatementNoLog($sql, [$_SESSION['api'], $userId, $patientId, $new_token_a, $new_token_b_hash]);
+        sqlStatementNoLog($sql, [$tokenType, $userId, $patientId, $new_token_a, $new_token_b_hash]);
 
         // Sending the full token back to user in encrypted/signed form
         $cryptoGen = new CryptoGen();
@@ -138,21 +141,19 @@ class AuthRestController
             error_log("OpenEMR Error: API was unable to create a encrypted and signed token");
             return;
         }
-        $encoded_token = base64_encode(json_encode(['token' => $encrypted_new_full_token, 'site_id' => trim($_SESSION['site_id']), 'api' => trim($_SESSION['api'])]));
+        $encoded_token = base64_encode(json_encode(['token' => $encrypted_new_full_token, 'site_id' => trim($_SESSION['site_id']), 'api' => trim($tokenType)]));
         $give = array("token_type" => "Bearer", "access_token" => $encoded_token, "expires_in" => "3600", "user_data" => array("user_id" => $genericUserId));
         $ip = collectIpAddresses();
-        EventAuditLogger::instance()->newEvent($event, $authPayload["username"], $userGroup, 1, "API success for API token request: " . $ip['ip_string'], !empty($patientId) ? $patientId : null);
+        EventAuditLogger::instance()->newEvent($event, $userName, $userGroup, 1, "API success for API token request: " . $ip['ip_string'], !empty($patientId) ? $patientId : null);
         http_response_code(200);
         return $give;
     }
-
     public function isValidToken($tokenRaw)
     {
         // Token validation
         // Goal is to mitigate both brute force and pass the hash attacks
         //  -Brute force is mitigated by decrypting/validating the encrypted/signed token
         //  -Pass the hash is mitigated by checking a secure hash of second half of token with secure hash stored in database
-
         // decrypt/validate the encrypted/signed token
         $token = $this->decryptValidateToken($tokenRaw);
         if (empty($token)) {
