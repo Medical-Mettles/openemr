@@ -326,7 +326,8 @@ class EncounterService extends BaseService
                     array_push($sqlBindArray, $date['value']);
                 } else {
                     // equality match
-                    array_push($whereClauses, $fieldName . ' = ?');
+                    array_push($whereClauses, 'fe.'.$fieldName . ' = ?');
+                    
                     array_push($sqlBindArray, $fieldValue);
                 }
             }

@@ -22,6 +22,7 @@
  **/
 
 (function( $ ) {
+	
 
 	$.fn.esign = function( customSettings, customEvents ) {
 
@@ -33,6 +34,7 @@
 			baseUrl : "/interface/esign/index.php",
 			logViewAction : "/interface/esign/index.php?method=esign_log_view",
 			formViewAction : "/interface/esign/index.php?method=esign_form_view",
+			checkSignRulesAction : "/openemr/interface/forms/procedure_request/new.php",
 			formSubmitAction : "/interface/esign/index.php?method=esign_form_submit"
 		}, customSettings );
 
@@ -46,6 +48,27 @@
 				});
 				var editButtonId = "form-edit-button-"+response.formDir+"-"+response.formId;
 				$("#"+editButtonId).replaceWith( response.editButtonHtml );
+			},
+			checkSignRules : function( response1,formData ) {
+				$.post(
+					settings.checkSignRulesAction,
+					formData,
+					function( response ) {
+						if ( response.status != 'success' ) {
+							$("#esign-form-error-container").remove();
+							$("#esign-mask-content").find("form").append("<div id='esign-form-error-container' class='error'>"+response.message+"</div>");
+						} else {
+							// Close the form and refresh the log if it's on the screen
+							$(".window").hide();
+							$("#esign-mask").hide();
+							events.afterFormSuccess( response1);
+						}
+					},
+					'json'
+				);
+				
+				
+				
 			}
 		}, customEvents );
 
@@ -93,7 +116,8 @@
 
 	    $(document).on( 'click', '#esign-sign-button-'+settings.module, function( e ) {
 
-	        e.preventDefault();
+			e.preventDefault();
+			console.log("form submit before");
 	        var formData = $('#esign-signature-form').serialize();
             top.restoreSession();
 	        $.post(
@@ -106,8 +130,9 @@
 	        		} else {
 	        			// Close the form and refresh the log if it's on the screen
 	        			$(".window").hide();
-	        	        $("#esign-mask").hide();
-	        	        events.afterFormSuccess( response );
+						$("#esign-mask").hide();
+						
+	        	        events.checkSignRules( response,formData);
 	        		}
 	        	},
 	        	'json'
@@ -147,7 +172,8 @@
 				var params = element.data();
 
 				// Load the form
-                top.restoreSession();
+				top.restoreSession();
+				
 				$.post( settings.formViewAction, params, function( response ) {
 					$('#esign-mask-content').html( response );
 				});

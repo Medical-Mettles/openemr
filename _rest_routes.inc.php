@@ -441,6 +441,8 @@ RestConfig::$FHIR_ROUTE_MAP = array(
     },
     "GET /fhir/Patient" => function () {
         RestConfig::authorization_check("patients", "demo");
+        
+
         return (new FhirPatientRestController())->getAll($_GET);
     },
     "GET /fhir/Patient/:id" => function ($id) {
