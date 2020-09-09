@@ -23,6 +23,7 @@
  */
 
 require_once($GLOBALS["srcdir"] . "/options.inc.php");
+require_once(__DIR__ . "/../globals.php");
 
 use OpenEMR\Common\Acl\AclMain;
 
@@ -450,7 +451,7 @@ function generate_order_report($orderid, $input_form = false, $genstyles = true,
                 return false;
             }
 
-            function openSmartApp(appContext){
+            function openSmartApp(appContext) {
                 dlgopen('https://cf.mettles.com/index?iss=http://localhost/openemr/apis/fhir&patientId='.appContext,
                     '_blank', 1024, 750, true);
             }
@@ -666,23 +667,24 @@ function generate_order_report($orderid, $input_form = false, $genstyles = true,
             <br />
             <div>
                 <?php
-                $query = "SELECT " .
-                    "po.lab_id, po.date_ordered, pc.procedure_order_seq, pc.procedure_code, " .
-                    "pc.procedure_name, pc.diagnoses, po.prior_auth, po.prior_auth_appcontext, " .
-                    "pr.date_report, pr.date_report_tz, pr.date_collected, pr.date_collected_tz, " .
-                    "pr.procedure_report_id, pr.specimen_num, pr.report_status, pr.review_status, pr.report_notes " .
+                $query = "SELECT po.prior_auth, po.prior_auth_appcontext " .
                     "FROM procedure_order AS po " .
                     "JOIN procedure_order_code AS pc ON pc.procedure_order_id = po.procedure_order_id " .
                     "LEFT JOIN procedure_report AS pr ON pr.procedure_order_id = po.procedure_order_id AND " .
                     "pr.procedure_order_seq = pc.procedure_order_seq " .
-                    "WHERE po.procedure_order_id = ? " .
-                    "ORDER BY pc.procedure_order_seq, pr.date_report, pr.procedure_report_id";
+                    "WHERE po.procedure_order_id = ? ";
 
                 $res = sqlStatement($query, array($orderid));
                 while ($row = sqlFetchArray($res)) {
                     if ($row['prior_auth'] == 1) {
-                        echo "Prior Authorization is needed. <input type='button' class='btn btn-primary' value='Click here' onClick='openSmartApp(".$row['prior_auth_appcontext'].")'/> to start Prior Authorization process. ";
-                    }
+                ?>
+                        <form method='post' name='my_form' action="<?php echo $GLOBALS['rootdir']; ?>/forms/procedure_request/open_smart_app.php">
+                        <input type="hidden" name="app_context" value="<?php echo $row['prior_auth_appcontext'];?>"/>    
+                        Prior Authorization is needed.
+                            <input type='submit' class='btn btn-primary' value='Click here' />
+                            to start Prior Authorization process.
+                        </form>
+                <?php }
                 } ?>
 
             </div>
