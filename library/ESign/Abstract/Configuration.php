@@ -55,6 +55,11 @@ abstract class Abstract_Configuration implements ConfigurationIF
         return $this->getBaseUrl() . "?module=" . $this->getModule() . "&method=" . $this->getLogViewMethod();
     }
 
+    public function getCheckSignRulesAction()
+    {
+        return $GLOBALS['webroot'] . "/interface/forms/procedure_request/crd_request.php";
+    }
+
     public function getFormViewAction()
     {
         return $this->getBaseUrl() . "?module=" . $this->getModule() . "&method=" . $this->getFormViewMethod();

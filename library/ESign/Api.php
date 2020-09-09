@@ -92,6 +92,7 @@ class Api
         $params = array(
             'baseUrl' => $configuration->getBaseUrl(),
             'logViewAction' => $configuration->getLogViewAction(),
+            'checkSignRulesAction' => $configuration->getCheckSignRulesAction(),
             'formViewAction' => $configuration->getFormViewAction(),
             'formSubmitAction' => $configuration->getFormSubmitAction(),
             'module' => $configuration->getModule()
