@@ -40,6 +40,7 @@ use OpenEMR\RestControllers\InsuranceRestController;
 use OpenEMR\RestControllers\MessageRestController;
 use OpenEMR\RestControllers\PrescriptionRestController;
 use OpenEMR\RestControllers\ProcedureRestController;
+use OpenEMR\RestControllers\FHIR\FhirMetaDataRestController;
 
 // Note some Http clients may not send auth as json so a function
 // is implemented to determine and parse encoding on auth route's.
@@ -569,7 +570,12 @@ RestConfig::$FHIR_ROUTE_MAP = array(
     "GET /fhir/Location/:uuid" => function ($uuid) {
         RestConfig::authorization_check("patients", "med");
         return (new FhirLocationRestController())->getOne($uuid);
-    }
+    },
+    //Adding metadata route to fhir routes
+    "GET /fhir/metadata" => function () {
+        RestConfig::authorization_check("patients", "demo");
+        return (new FhirMetaDataRestController())->getAll($_GET);
+    },
 );
 
 // Patient portal api routes
