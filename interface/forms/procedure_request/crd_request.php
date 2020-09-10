@@ -10,6 +10,8 @@ use OpenEMR\RestControllers\AuthRestController;
 use OpenEMR\Services\PatientService;
 use OpenEMR\Services\BaseService;
 
+use function Clue\StreamFilter\append;
+
 error_log("in djdjd");
 foreach($_POST as $key => $value) {
     error_log("The key is ".$key);
@@ -17,9 +19,14 @@ foreach($_POST as $key => $value) {
 }
 $response = new stdClass();
 if($_POST["formDir"] == "procedure_order"){
-    $encounterId = $_POST['encounterId'];
+    $po_encounterId = $_POST['encounterId'];
     $formId = $_POST['encounterId'];
 
+    $sql = "SELECT id FROM form_encounter where encounter = ?";
+    $res = sqlStatement($sql, array($po_encounterId));
+    while ($enc_res = sqlFetchArray($res)) {
+        $encounterId = $enc_res['id'];
+    }
     $patientService = new PatientService();
     $patient_uuid = $patientService->getUUID($_SESSION['pid']);
     
@@ -64,19 +71,22 @@ if($_POST["formDir"] == "procedure_order"){
         //Update prior auth context
         $update_query = "UPDATE procedure_order JOIN forms ON forms.form_id = procedure_order.procedure_order_id 
         SET prior_auth= ?,prior_auth_appcontext = ? 
-        WHERE procedure_order.procedure_order_id = ?";
+        WHERE forms.id = ? and procedure_order.encounter_id = ?";
         error_log($update_query);
-        sqlStatement($update_query, array(1, $response->appContext, $_POST['formId']));
+        sqlStatement($update_query, array(1, $response->appContext, $_POST['formId'], $encounterId));
         
         $response->responseHtml = "<form method='post' name='my_form' action='".$GLOBALS['rootdir']."/forms/procedure_request/open_smart_app.php'> 
         <input type='hidden' name='app_context' value='".$response->appContext."'/> Prior Authorization is needed. 
         <input type='submit' class='btn btn-primary' value='Click here' />to start Prior Authorization process.</form>";
     }
-    
-} 
+    $response->status = "success";
+    echo json_encode($response);
+    exit;  
+}  
 $response->status = "success";
 echo json_encode($response);
 exit;
+
 
 function postCRDRequest($crdRequest){
     $curl = curl_init($GLOBALS['order_sign_url']);
@@ -103,7 +113,7 @@ function postCRDRequest($crdRequest){
     return $cardResponse;
 }
 function generateServiceRequest($formId, $encounter_uuid, $patient_uuid){
-    //TODO : coverage and requester are to be added
+    //TODO : coverage,performer and requester are to be added
     $servicerequest = new stdClass();
     $servicerequest->resourceType = "Servicerequest";
     $servicerequest->id = rand();
@@ -120,6 +130,27 @@ function generateServiceRequest($formId, $encounter_uuid, $patient_uuid){
     $servicerequest->authoredOn = "2020-09-09T07:07:21Z";
     $servicerequest->encounter = (object) array(
         "reference"=> "Encounter/".$encounter_uuid
+    );
+    $servicerequest->quantityQuantity = 1;//TODO
+
+    //GetCode
+    $sql = "SELECT procedure_code, procedure_name FROM procedure_order_code JOIN forms ON forms.form_id = procedure_order_code.procedure_order_id where forms.id = ?";
+    $res = sqlStatement($sql, array($formId));
+    $codes = array();
+    while ($codeRes = sqlFetchArray($res)) {
+        $code = $codeRes["procedure_code"];
+        $display = $codeRes["procedure_name"];
+        $coding = (Object) array(
+            "code"=>$code,
+            "system"=>"",//TODO : No system is available in procedure_order_code table
+            "display"=>$display
+        );
+        array_push($codes, $coding);
+    }
+    $servicerequest->code = (Object) array(
+        (Object) array(
+            "coding"=> $codes
+        )
     );
     return $servicerequest;
 }
