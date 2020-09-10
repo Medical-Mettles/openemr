@@ -68,6 +68,10 @@ if (IS_WINDOWS) {
     $server_document_root = str_replace("\\", "/", $server_document_root);
 }
 
+//Prior auth App Globals
+$GLOBALS['fhir_url'] = "http://localhost/openemr/apis/fhir";
+$GLOBALS['priorauth_app_url'] = "https://od.mettles.com/index";
+$GLOBALS['order_sign_url'] = "https://fhir-dev.mettles.com/crd/r4/cds-services/order-sign-crd";
 // Auto collect the relative html path, i.e. what you would type into the web
 // browser after the server address to get to OpenEMR.
 // This removes the leading portion of $webserver_root that it has in common with the web server's document

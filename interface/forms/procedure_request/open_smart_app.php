@@ -11,13 +11,11 @@ foreach($_POST as $key => $value) {
     error_log("The key is ".$key);
     error_log("The value is ".$value);
 }
-$smart_url = "https://od.mettles.com/index?iss=http://localhost/openemr/apis/fhir";
+$smart_url = $GLOBALS['priorauth_app_url']."?iss=".$GLOBALS['fhir_url'];
 $patientService = new PatientService();
 $patient_fhirid = $patientService->getUUID($_SESSION['pid']);
-// $fhir_session = (new AuthRestController())->generate_session_token(0, $_SESSION['authUserID'], "Default", $_SESSION['authUser'], "api", $_SESSION['authUserID'],'fhir');
-// echo "<br>Access token----".$fhir_session['access_token']."--------";
-//$smart_url = $smart_url."&bearer_token=".$fhir_session['access_token'];
-$smart_url = $smart_url."&bearer_token=1234567891";
+$fhir_session = (new AuthRestController())->generate_session_token(0, $_SESSION['authUserID'], "Default", $_SESSION['authUser'], "api", $_SESSION['authUserID'],'fhir');
+$smart_url = $smart_url."&bearer_token=".$fhir_session['access_token'];
 if($patient_fhirid){
     $smart_url = $smart_url."&patientId=".$patient_fhirid;
 }
