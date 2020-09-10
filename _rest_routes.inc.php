@@ -411,6 +411,7 @@ use OpenEMR\RestControllers\FHIR\FhirEncounterRestController;
 use OpenEMR\RestControllers\FHIR\FhirObservationRestController;
 use OpenEMR\RestControllers\FHIR\FhirImmunizationRestController;
 use OpenEMR\RestControllers\FHIR\FhirLocationRestController;
+use OpenEMR\RestControllers\FHIR\FhirCoverageRestController;
 use OpenEMR\RestControllers\FHIR\FhirMedicationRestController;
 use OpenEMR\RestControllers\FHIR\FhirMedicationRequestRestController;
 use OpenEMR\RestControllers\FHIR\FhirOrganizationRestController;
@@ -570,6 +571,10 @@ RestConfig::$FHIR_ROUTE_MAP = array(
     "GET /fhir/Location/:uuid" => function ($uuid) {
         RestConfig::authorization_check("patients", "med");
         return (new FhirLocationRestController())->getOne($uuid);
+    },
+    "GET /fhir/Coverage" => function () {
+        RestConfig::authorization_check("patients", "med");
+        return (new FhirCoverageRestController())->getAll($_GET);
     },
     //Adding metadata route to fhir routes
     "GET /fhir/metadata" => function () {

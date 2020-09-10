@@ -36,7 +36,9 @@ class FhirCoverageService extends FhirServiceBase
      */
     protected function loadSearchParameters()
     {
-        return  [];
+        return  [
+            'patient' => ['patient']
+        ];
     }
 
     /**
@@ -132,7 +134,8 @@ class FhirCoverageService extends FhirServiceBase
      */
     public function searchForOpenEMRRecords($openEMRSearchParameters)
     {
-        return $this->coverageService->getAllData($openEMRSearchParameters, false);
+        
+        return $this->coverageService->getAllData($openEMRSearchParameters);
     }
 
     public function parseFhirResource($fhirResource = array())

@@ -47,6 +47,10 @@ class FhirCoverageRestController
      */
     public function getAll($searchParams)
     {
+        foreach($searchParams as $key=>$value) {
+            error_log("The key log is " . $key);
+            error_log("The value log is " . $value);
+        }
         $processingResult = $this->fhirCoverageService->getAll($searchParams);
         $bundleEntries = array();
         foreach ($processingResult->getData() as $index => $searchResult) {

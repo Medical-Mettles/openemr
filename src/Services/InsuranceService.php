@@ -15,6 +15,7 @@
 namespace OpenEMR\Services;
 
 use Particle\Validator\Validator;
+use OpenEMR\Validators\ProcessingResult;
 
 class InsuranceService
 {
@@ -66,6 +67,32 @@ class InsuranceService
 
         return sqlQuery($sql, array($pid, $type));
     }
+
+   
+
+    public function getAllData($openEMRSearchParameters)
+    {
+        $processingResult = new ProcessingResult();
+        
+        if (isset($openEMRSearchParameters['patient'])) {
+            $patientService = new PatientService();
+            
+            $patientData = $patientService->getOne($openEMRSearchParameters['patient'])->getData();
+            foreach($patientData as $pdata) {
+                $pid = $pdata['pid'];
+                $data = $this->getAll($pid);
+                foreach ($data as $row) {
+                    $processingResult->addData($row);
+                }
+                
+                
+            }
+            
+
+        }
+        return $processingResult;
+    }
+
 
     public function getAll($pid)
     {
