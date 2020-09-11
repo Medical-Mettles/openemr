@@ -69,7 +69,7 @@ if (IS_WINDOWS) {
 }
 
 //Prior auth App Globals
-$GLOBALS['fhir_url'] = "http://localhost/openemr/apis/fhir";
+$GLOBALS['fhir_url'] = "http://localhost:5000/apis/fhir";
 $GLOBALS['priorauth_app_url'] = "https://od.mettles.com/index";
 $GLOBALS['order_sign_url'] = "https://fhir-dev.mettles.com/crd/r4/cds-services/order-sign-crd";
 // Auto collect the relative html path, i.e. what you would type into the web

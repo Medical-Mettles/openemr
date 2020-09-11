@@ -173,7 +173,7 @@ class RestConfig
 
     static function is_authentication($resource)
     {
-        return ($resource === "/api/auth" || $resource === "/fhir/auth" || $resource === "/portal/auth" || $resource === "/portalfhir/auth");
+        return ($resource === "/api/auth" || $resource === "/fhir/metadata" || $resource === "/fhir/auth" || $resource === "/portal/auth" || $resource === "/portalfhir/auth");
     }
 
     static function get_bearer_token()

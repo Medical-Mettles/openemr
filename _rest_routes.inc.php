@@ -578,7 +578,7 @@ RestConfig::$FHIR_ROUTE_MAP = array(
     },
     //Adding metadata route to fhir routes
     "GET /fhir/metadata" => function () {
-        RestConfig::authorization_check("patients", "demo");
+        //RestConfig::authorization_check("patients", "demo");
         return (new FhirMetaDataRestController())->getAll($_GET);
     },
 );
