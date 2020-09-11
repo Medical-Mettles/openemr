@@ -116,12 +116,13 @@ class ProcedureService extends BaseService
             $row['puuid'] = UuidRegistry::uuidToString($row['puuid']);
             $row['euuid'] = UuidRegistry::uuidToString($row['euuid']);
             $row['pruuid'] = UuidRegistry::uuidToString($row['pruuid']);
+            /*
             if ($row['order_diagnosis'] != "") {
                 $row['order_diagnosis'] = $this->addDiagnosis($row['order_diagnosis']);
             }
             if ($row['diagnoses'] != "") {
                 $row['diagnoses'] = $this->addDiagnosis($row['diagnoses']);
-            }
+            }*/
             $processingResult->addData($row);
         }
 
@@ -181,12 +182,13 @@ class ProcedureService extends BaseService
         $sqlResult['puuid'] = UuidRegistry::uuidToString($sqlResult['puuid']);
         $sqlResult['euuid'] = UuidRegistry::uuidToString($sqlResult['euuid']);
         $sqlResult['pruuid'] = UuidRegistry::uuidToString($sqlResult['pruuid']);
+        /*
         if ($sqlResult['order_diagnosis'] != "") {
             $sqlResult['order_diagnosis'] = $this->addDiagnosis($sqlResult['order_diagnosis']);
         }
         if ($sqlResult['diagnoses'] != "") {
             $sqlResult['diagnoses'] = $this->addDiagnosis($sqlResult['diagnoses']);
-        }
+        }*/
         $processingResult->addData($sqlResult);
         return $processingResult;
     }
