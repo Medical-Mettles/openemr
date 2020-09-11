@@ -576,6 +576,10 @@ RestConfig::$FHIR_ROUTE_MAP = array(
         RestConfig::authorization_check("patients", "med");
         return (new FhirCoverageRestController())->getAll($_GET);
     },
+    "GET /fhir/Coverage/:uuid" => function ($uuid) {
+        RestConfig::authorization_check("patients", "med");
+        return (new FhirCoverageRestController())->getOne($uuid)['data'];
+    },
     //Adding metadata route to fhir routes
     "GET /fhir/metadata" => function () {
         //RestConfig::authorization_check("patients", "demo");

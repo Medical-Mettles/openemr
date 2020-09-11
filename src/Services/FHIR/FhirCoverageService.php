@@ -13,9 +13,12 @@
 namespace OpenEMR\Services\FHIR;
 
 use OpenEMR\FHIR\R4\FHIRDomainResource\FHIRCoverage;
+use OpenEMR\FHIR\R4\FHIRDomainResource\FHIROrganization;
 use OpenEMR\FHIR\R4\FHIRElement\FHIRContactPoint;
 use OpenEMR\FHIR\R4\FHIRElement\FHIRId;
 use OpenEMR\Services\InsuranceService;
+use OpenEMR\Common\Uuid\UuidRegistry;
+use OpenEMR\FHIR\R4\FHIRElement\FHIRReference;
 
 class FhirCoverageService extends FhirServiceBase
 {
@@ -56,11 +59,17 @@ class FhirCoverageService extends FhirServiceBase
         $coverageResource->setMeta($meta);
 
         $id = new FHIRId();
-        $id->setValue($dataRecord['uuid']);
+        
+        $id->setValue(UuidRegistry::uuidToString($dataRecord['uuid']));
+        
         $coverageResource->setId($id);
 
         $coverageResource->setStatus("active");
+        $payerOrganization = new FHIRReference();
+        $payerOrganization->setReference('Organization/a1d673ba-f41e-11ea-bd43-477d9fa55cdf');
+        $coverageResource->addPayor($payerOrganization);
 
+        /*
         $coverageResource->setAddress(array(
             'line' => [$dataRecord['street']],
             'city' => $dataRecord['city'],
@@ -98,7 +107,7 @@ class FhirCoverageService extends FhirServiceBase
             $email->setSystem('email');
             $email->setValue($dataRecord['email']);
             $coverageResource->addTelecom($email);
-        }
+        }*/
 
         if ($encode) {
             return json_encode($coverageResource);
@@ -114,13 +123,14 @@ class FhirCoverageService extends FhirServiceBase
      */
     public function getOne($fhirResourceId)
     {
-        $processingResult = $this->coverageService->getOne($fhirResourceId);
+        $processingResult = $this->coverageService->getByUUID($fhirResourceId);
         if (!$processingResult->hasErrors()) {
             if (count($processingResult->getData()) > 0) {
                 $openEmrRecord = $processingResult->getData()[0];
                 $fhirRecord = $this->parseOpenEMRRecord($openEmrRecord);
                 $processingResult->setData([]);
                 $processingResult->addData($fhirRecord);
+                
             }
         }
         return $processingResult;

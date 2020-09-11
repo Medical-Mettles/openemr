@@ -16,6 +16,7 @@ namespace OpenEMR\Services;
 
 use Particle\Validator\Validator;
 use OpenEMR\Validators\ProcessingResult;
+use OpenEMR\Common\Uuid\UuidRegistry;
 
 class InsuranceService
 {
@@ -91,6 +92,36 @@ class InsuranceService
 
         }
         return $processingResult;
+    }
+
+    public function getByUUID($uuid)
+    {
+        $processingResult = new ProcessingResult();
+        error_log($uuid);
+        $uuidBinary = UuidRegistry::uuidToBytes($uuid);
+        error_log($uuidBinary);
+                $data = $this->getAllByUUID($uuidBinary);
+                foreach ($data as $row) {
+                    error_log("In row");
+                    $processingResult->addData($row);
+                }
+                
+          
+        return $processingResult;
+    }
+
+    public function getAllByUUID($uuid)
+    {
+        $sql = "SELECT * FROM insurance_data WHERE uuid=?";
+
+        $statementResults = sqlStatement($sql, array($uuid));
+
+        $results = array();
+        while ($row = sqlFetchArray($statementResults)) {
+            array_push($results, $row);
+        }
+
+        return $results;
     }
 
 
