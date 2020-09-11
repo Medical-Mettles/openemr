@@ -39,9 +39,6 @@
 		}, customSettings);
 
 		var events = $.extend({
-			openSmartApp: function(url){
-				window.location.href = url;
-			},
 			afterFormSuccess: function (response) {
 				var logId = "esign-signature-log-" + response.formDir + "-" + response.formId;
 				top.restoreSession();
@@ -52,12 +49,10 @@
 				$("#" + editButtonId).replaceWith(response.editButtonHtml);
 			},
 			checkSignRules: function (response1, formData) {
-				console.log("fin check sign");
 				$.post(
 					settings.checkSignRulesAction,
 					formData,
 					function (response) {
-						console.log("After check sign rules---");
 						console.log(response.status);
 						if (response.status != 'success') {
 							$("#esign-form-error-container").remove();
@@ -69,11 +64,13 @@
 							$("#esign-mask").hide();
 							
 							// create a new div node befor sign log view
-							var paDiv = document.createElement('div');
-							paDiv.innerHTML = response.responseHtml;
-							var logId = "esign-signature-log-" + response1.formDir + "-" + response1.formId;
-							var esignDiv = $("#"+logId);
-							esignDiv.before(paDiv);
+							// var paDiv = document.createElement('div');
+							// paDiv.innerHTML = response.responseHtml;
+							// var logId = "esign-signature-log-" + response1.formDir + "-" + response1.formId;
+							// var esignDiv = $("#"+logId);
+							// esignDiv.before(paDiv);
+							var esignDiv = $("#esign_pa");
+							esignDiv.replaceWith(response.responseHtml);
 							events.afterFormSuccess(response1);
 						}
 					},

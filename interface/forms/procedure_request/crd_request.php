@@ -22,9 +22,17 @@ if($_POST["formDir"] == "procedure_order"){
     $po_encounterId = $_POST['encounterId'];
     $formId = $_POST['encounterId'];
 
-    $sql = "SELECT id FROM form_encounter where encounter = ?";
-    $res = sqlStatement($sql, array($po_encounterId));
-    while ($enc_res = sqlFetchArray($res)) {
+    $sql = "SELECT procedure_order.procedure_order_id as procedure_order_id FROM procedure_order JOIN forms ON forms.form_id = procedure_order.procedure_order_id
+                    where forms.id = ?";
+    $res = sqlStatement($sql, array($formId));
+    while ($po_res = sqlFetchArray($res)) {
+        $procedure_order_id = $po_res['procedure_order_id'];
+        error_log("procedure_order_id----",$procedure_order_id);
+    }
+
+    $sql1 = "SELECT id FROM form_encounter where encounter = ?";
+    $res1 = sqlStatement($sql1, array($po_encounterId));
+    while ($enc_res = sqlFetchArray($res1)) {
         $encounterId = $enc_res['id'];
     }
     $patientService = new PatientService();
@@ -67,15 +75,18 @@ if($_POST["formDir"] == "procedure_order"){
     $cardResponse = postCRDRequest($crdRequest);
 
     if($cardResponse){
+        $response->procedure_order_id = $procedure_order_id;
         $response->appContext = "template=questionnaire-unitedhealthcare-stressechocardiography&request=276&priorauth=true&filepath=_";
         //Update prior auth context
         $update_query = "UPDATE procedure_order JOIN forms ON forms.form_id = procedure_order.procedure_order_id 
         SET prior_auth= ?,prior_auth_appcontext = ? 
         WHERE forms.id = ? and procedure_order.encounter_id = ?";
+        error_log("Input to query-".$response->appContext."-formid-". $_POST['formId']."-encounterId-". $encounterId."-".$po_encounterId);
         error_log($update_query);
-        sqlStatement($update_query, array(1, $response->appContext, $_POST['formId'], $encounterId));
+        sqlStatement($update_query, array(1, $response->appContext, $_POST['formId'], $po_encounterId));
         
-        $response->responseHtml = "<form method='post' name='my_form' action='".$GLOBALS['rootdir']."/forms/procedure_request/open_smart_app.php'> 
+        $response->responseHtml = "<div class='body_title esign-log-row header'>Prior Authorization</div>
+        <form method='post' name='my_form' action='".$GLOBALS['rootdir']."/forms/procedure_request/open_smart_app.php'> 
         <input type='hidden' name='app_context' value='".$response->appContext."'/> Prior Authorization is needed. 
         <input type='submit' class='btn btn-primary' value='Click here' />to start Prior Authorization process.</form>";
     }
@@ -94,7 +105,7 @@ function postCRDRequest($crdRequest){
     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     $payload = json_encode($crdRequest);
-    error_log(print_r($crdRequest, true ));
+    error_log($payload);
     curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
     curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
     // do the request. If FALSE, then an exception occurred
@@ -104,9 +115,9 @@ function postCRDRequest($crdRequest){
         ));
     }
     error_log( "<br>CRD Response:<br>");
-    error_log(print_r($result));
+    // error_log(print_r($result));
     $cardResponse = json_decode($result, true);
-    error_log(print_r($cardResponse));
+    // error_log(print_r($cardResponse));
     // get result code
     $responseCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     error_log($responseCode);

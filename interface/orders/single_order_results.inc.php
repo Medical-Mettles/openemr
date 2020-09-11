@@ -525,6 +525,29 @@ function generate_order_report($orderid, $input_form = false, $genstyles = true,
                 </tr>
             </table>
             <br />
+            <div id="esign_pa">
+                <?php
+                $query = "SELECT po.prior_auth, po.prior_auth_appcontext " .
+                    "FROM procedure_order AS po " .
+                    "JOIN procedure_order_code AS pc ON pc.procedure_order_id = po.procedure_order_id " .
+                    "LEFT JOIN procedure_report AS pr ON pr.procedure_order_id = po.procedure_order_id AND " .
+                    "pr.procedure_order_seq = pc.procedure_order_seq " .
+                    "WHERE po.procedure_order_id = ? ";
+
+                $res = sqlStatement($query, array($orderid));
+                while ($row = sqlFetchArray($res)) {
+                    if ($row['prior_auth'] == 1) {
+                ?>
+                        <div class="body_title esign-log-row header">Prior Authorization</div>
+                        <form method='post' name='my_form' action="<?php echo $GLOBALS['rootdir']; ?>/forms/procedure_request/open_smart_app.php">
+                            <input type="hidden" name="app_context" value="<?php echo $row['prior_auth_appcontext']; ?>" />
+                            Prior Authorization is needed.
+                            <input type='submit' class='btn btn-primary' value='Click here' />
+                            to start Prior Authorization process.
+                        </form>
+                <?php }
+                } ?>
+            </div>
             <table class="table">
                 <tr class='head'>
                     <td class="align-middle" style="font-size: 1rem;" width='20%'><?php echo xlt('Diagnosis'); ?></td>
@@ -665,29 +688,6 @@ function generate_order_report($orderid, $input_form = false, $genstyles = true,
                 ?>
             </table>
             <br />
-            <div>
-                <?php
-                $query = "SELECT po.prior_auth, po.prior_auth_appcontext " .
-                    "FROM procedure_order AS po " .
-                    "JOIN procedure_order_code AS pc ON pc.procedure_order_id = po.procedure_order_id " .
-                    "LEFT JOIN procedure_report AS pr ON pr.procedure_order_id = po.procedure_order_id AND " .
-                    "pr.procedure_order_seq = pc.procedure_order_seq " .
-                    "WHERE po.procedure_order_id = ? ";
-
-                $res = sqlStatement($query, array($orderid));
-                while ($row = sqlFetchArray($res)) {
-                    if ($row['prior_auth'] == 1) {
-                ?>
-                        <form method='post' name='my_form' action="<?php echo $GLOBALS['rootdir']; ?>/forms/procedure_request/open_smart_app.php">
-                        <input type="hidden" name="app_context" value="<?php echo $row['prior_auth_appcontext'];?>"/>    
-                        Prior Authorization is needed.
-                            <input type='submit' class='btn btn-primary' value='Click here' />
-                            to start Prior Authorization process.
-                        </form>
-                <?php }
-                } ?>
-
-            </div>
             <table class="table border-0">
                 <tr>
                     <td class="border-0">
